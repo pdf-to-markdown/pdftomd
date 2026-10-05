@@ -25,106 +25,105 @@
   .spinner { display: inline-block; width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   #appScreen { display: none; }
-  .drop { 
-border: 2px dashed #c7d2fe; border-radius: 14px; background: #fff; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 16px; }
-  .drop.hover { border-color: #4f46e5; background: #eef2ff; }
-  .drop .icon { font-size: 38px; }
-  .drop strong { display: block; margin-top: 8px; font-size: 16px; }
-  .drop small { color: #6b7280; }
-  .urlbox { background: #fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .urlbox label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 8px; }
-  .urlbox textarea { width: 100%; min-height: 70px; font-size: 13px; font-family: ui-monospace, Menlo, Consolas, monospace; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; resize: vertical; }
-  .urlbox small { color: #6b7280; font-size: 12px; display: block; margin-top: 6px; }
-  .options { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 13px; color: #374151; }
-  .options label { display: flex; align-items: center; gap: 6px; }
-  .options .tip { width: 100%; color: #9ca3af; font-size: 11.5px; }
-  .bar-outer { display: none; background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .bar { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
-  .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg,#4f46e5,#7c3aed); transition: width .2s; }
-  .bar-outer small { color: #6b7280; }
-  .queue { display: flex; flex-direction: column; gap: 10px; }
-  .item { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .item .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .item .name { font-weight: 600; font-size: 14px; word-break: break-all; }
-
-  .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .drop { border: 2px dashed #c7d2fe; border-radius: 16px; background: #fff; padding: 34px 20px; text-align: center; cursor: pointer; transition: all .15s; }
+  .drop:hover, .drop.over { border-color: #4f46e5; background: #eef2ff; }
+  .drop .ico { font-size: 34px; }
+  .drop p { margin: 8px 0 0; color: #374151; font-size: 14px; }
+  .drop small { color: #9ca3af; font-size: 12px; }
+  .urls { margin-top: 14px; background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+  .urls label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 6px; }
+  .urls textarea { width: 100%; min-height: 74px; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; font-size: 13px; resize: vertical; }
+  .opts { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 2px; font-size: 13.5px; color: #374151; }
+  .opts label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  button { border: none; border-radius: 10px; background: #4f46e5; color: #fff; font-weight: 600; cursor: pointer; }
+  button:hover { background: #4338ca; }
+  button.secondary { background: #eef2ff; color: #4f46e5; }
+  button.secondary:hover { background: #e0e7ff; }
+  button:disabled { opacity: .6; cursor: default; }
+  .bar-outer { display: none; margin-top: 14px; }
+  .bar { height: 10px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
+  #bar { height: 100%; width: 0; background: linear-gradient(90deg, #4f46e5, #7c3aed); transition: width .3s; }
+  .bar-outer small { color: #6b7280; font-size: 12.5px; }
+  .global-actions { display: none; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .global-actions button { padding: 10px 16px; font-size: 13.5px; }
+  .queue { margin-top: 20px; }
+  .item { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+  .item .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .item .name { font-weight: 600; font-size: 14.5px; word-break: break-all; }
+  .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
   .badge.pending { background: #f3f4f6; color: #6b7280; }
-  .badge.working { background: #e0e7ff; color: #4338ca; }
+  .badge.working { background: #fef3c7; color: #92400e; }
   .badge.done { background: #d1fae5; color: #065f46; }
   .badge.error { background: #fee2e2; color: #991b1b; }
+  .item .err { margin-top: 8px; font-size: 12.5px; color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; word-break: break-word; }
+  .item .note { margin-top: 8px; font-size: 12.5px; color: #92400e; }
   .item .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  button { border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; background: #4f46e5; color: #fff; }
-  button:hover { background: #4338ca; }
-  button.secondary { background: #e5e7eb; color: #374151; }
-  button.secondary:hover { background: #d1d5db; }
-  .item textarea { width: 100%; min-height: 260px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.55; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 10px; resize: vertical; white-space: pre; display: none; }
+  .item .actions button { padding: 7px 12px; font-size: 12.5px; }
+  .item textarea { display: none; width: 100%; margin-top: 10px; min-height: 220px; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
   .item textarea.open { display: block; }
-  .item .err { color: #991b1b; font-size: 13px; margin-top: 8px; }
-  .item .note { color: #92400e; font-size: 12px; margin-top: 6px; }
-  .global-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
-  footer { text-align: center; color: #9ca3af; font-size: 12px; padding: 20px; }
+  footer { text-align: center; color: #9ca3af; font-size: 12.5px; padding: 20px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>📄 → ✍️ PDF → Markdown</h1>
-  <p id="headerSub">Lot (10+ fichiers) ou par URL · OCR intégré · 100 % local</p>
+  <h1>PDF → Markdown</h1>
+  <p>Convertis tes PDF en Markdown, par lot ou via URL — OCR inclus pour les PDF scannés.</p>
   <div class="userbar" id="userbar" style="display:none">
-    <span id="whoami"></span>
-    <button id="logoutBtn">Se déconnecter</button>
+    <span id="userEmail"></span>
+    <button id="logoutBtn" class="secondary">Déconnexion</button>
   </div>
 </header>
-
-<div id="authScreen">
-  <div class="lock">🔐</div>
-  <h2>Accès privé</h2>
-  <p>Cet outil est réservé à son propriétaire.<br />Connecte-toi avec ton compte Google.</p>
-  <button class="gbtn" id="googleBtn">
-    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C36.68 2.66 30.83 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.9
-8 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-.86-.76-1.83-.76-2.59s.27-1.73.73-2.58L2.56 13.22C.95 16.47 0 20.12 0 24s.95 7.53 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.83 0 12.55-2.25 16.68-6.13l-7.73-6c-2.15 1.45-5 2.3-8.95 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-    Se connecter avec Google
-  </button>
-  <div id="authMsg"></div>
-</div>
-
-<main id="appScreen">
-  <div class="drop" id="drop">
-    <div class="icon">📄</div>
-    <strong>Glisse tes PDF ici (plusieurs à la fois), ou clique pour choisir</strong>
-    <small>Le traitement se fait entièrement dans ton navigateur</small>
-    <input type="file" id="file" accept="application/pdf" multiple hidden />
+<main>
+  <div id="authScreen">
+    <div class="lock">🔐</div>
+    <h2>Accès privé</h2>
+    <p>Cet outil est réservé à son propriétaire.<br />Connecte-toi avec ton compte Google.</p>
+    <button class="gbtn" id="googleBtn">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.2-2.2H12v4.3h6.6c-.1 1-.8 2.6-2.4 3.7l3.7 2.9c2.2-2.1 3.6-5.1 3.6-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.8-2.9c-1 .7-2.4 1.2-4.2 1.2-3.2 0-5.9-2.2-6.9-5.1L1.2 17.2C3.2 21.2 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.1 14.3c-.3-.8-.4-1.6-.4-2.3s.2-1.7.4-2.3L1.2 6.8C.4 8.4 0 10.1 0 12s.4 3.6 1.2 5.2l3.9-2.9z"/><path fill="#EA4335" d="M12 4.7c2.3 0 3.9 1 4.8 1.8l3.5-3.4C18 1.2 15.2 0 12 0 7.3 0 3.2 2.8 1.2 6.8l3.9 2.9c1-2.9 3.7-5 6.9-5z"/></svg>
+      Se connecter avec Google
+    </button>
+    <div id="authMsg"></div>
   </div>
 
-  <div class="urlbox">
-    <label>🌐 Ou colle des URLs de PDF (une par ligne, autant que tu veux)</label>
-    <textarea id="urls" placeholder="https://www.legifrance.gouv.fr/download/file/.../JOE
-https://exemple.com/document.pdf"></textarea>
-    <small>Les URLs sont d'abord récupérées via ton proxy Vercel (/api/fetch-pdf), puis en secours via des proxys publics.</small>
+  <div id="appScreen">
+    <div class="drop" id="drop">
+      <div class="ico">📄</div>
+      <p><strong>Glisse tes PDF ici</strong> (plusieurs à la fois), ou clique pour choisir</p>
+      <small>Le traitement se fait entièrement dans ton navigateur</small>
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf" multiple style="display:none" />
+
+    <div class="urls">
+      <label for="urls">🌐 Ou colle des URLs de PDF (une par ligne, autant que tu veux)</label>
+      <textarea id="urls" placeholder="https://exemple.com/document.pdf&#10;jo:2026-10-04  (Journal officiel via API PISTE)"></textarea>
+      <small>Les URLs sont d'abord récupérées via ton proxy Vercel (/api/fetch-pdf), puis en secours via des proxys publics. Mode spécial : jo:YYYY-MM-DD = Journal officiel via l'API officielle PISTE.</small>
+    </div>
+
+    <div class="opts">
+      <label><input type="checkbox" id="optTitles" checked /> Détecter les titres</label>
+      <label><input type="checkbox" id="optPageBreaks" /> Séparateur de pages</label>
+      <label><input type="checkbox" id="optJoinHyphens" checked /> Recoller les mots coupés</label>
+      <label><input type="checkbox" id="optOcr" checked /> 🔍 OCR (PDF scannés, fr+en)</label>
+    </div>
+    <small style="color:#9ca3af">L'OCR se déclenche automatiquement seulement sur les pages sans texte — les PDF normaux restent rapides.</small>
+
+    <div style="margin-top:14px">
+      <button id="convertAll" style="width:100%; padding: 13px; font-size: 15px;">🚀 Convertir tout</button>
+    </div>
+
+    <div class="bar-outer" id="progressWrap">
+      <div class="bar"><div id="bar"></div></div>
+      <small id="progressLabel"></small>
+    </div>
+
+    <div class="global-actions" id="globalActions">
+      <button id="dlAll">⬇️ Tout télécharger (.md séparés)</button>
+      <button id="dlZip" class="secondary">🗜️ Tout dans un .zip</button>
+      <button id="resetAll" class="secondary">↺ Tout effacer</button>
+    </div>
+
+    <div class="queue" id="queue"></div>
   </div>
-
-  <div class="options">
-    <label><input type="checkbox" id="optHeadings" checked /> Détecter les titres</label>
-    <label><input type="checkbox" id="optPageBreaks" checked /> Séparateur de pages</label>
-    <label><input type="checkbox" id="optJoinHyphens" checked /> Recoller les mots coupés</label>
-    <label><input type="checkbox" id="optOcr" checked /> 🔍 OCR (PDF scannés, fr+en)</label>
-    <span class="tip">L'OCR se déclenche automatiquement seulement sur les pages sans texte — les PDF normaux restent rapides.</span>
-  </div>
-
-  <button id="convertAll" style="width:100%; padding: 13px; font-size: 15px;">🚀 Convertir tout</button>
-
-  <div class="bar-outer" id="progressWrap">
-    <div class="bar
-"><div id="bar"></div></div>
-    <small id="progressLabel"></small>
-  </div>
-
-  <div class="global-actions" id="globalActions" style="display:none">
-    <button id="dlAll">⬇️ Tout télécharger (.md séparés)</button>
-    <button id="dlZip" class="secondary">🗜️ Tout dans un .zip</button>
-    <button id="resetAll" class="secondary">↺ Tout effacer</button>
-  </div>
-
-  <div class="queue" id="queue"></div>
 </main>
 
 <footer>OCR via Tesseract.js · Auth Supabase · tout se passe dans ton navigateur.</footer>
@@ -135,12 +134,15 @@ https://exemple.com/document.pdf"></textarea>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function () {
-  // ==== CONFIG INJECTÉE AU BUILD (build.sh + variables Vercel) ====
+  // ==== CONFIG INJECTEE AU BUILD (build.sh + variables Vercel) ====
   var SUPABASE_URL = "__SUPABASE_URL__";
   var SUPABASE_ANON_KEY = "__SUPABASE_ANON_KEY__";
   var ALLOWED_EMAIL = "contact@mail.martytheo.com";
   // ================================================================
 
+  if (window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+  // ================= AUTH =================
   var authScreen = document.getElementById("authScreen");
   var appScreen = document.getElementById("appScreen");
   var authMsg = document.getElementById("authMsg");
@@ -153,6 +155,19 @@ https://exemple.com/document.pdf"></textarea>
     document.getElementById("googleBtn").disabled = false;
   }
 
+  function checkAccess(session) {
+    var email = (session && session.user && session.user.email) || "";
+    if (email.toLowerCase() !== ALLOWED_EMAIL) {
+      authError("Ce compte (" + email + ") n'est pas autorisé à utiliser cet outil.");
+      if (sb) sb.auth.signOut();
+      return;
+    }
+    authScreen.style.display = "none";
+    appScreen.style.display = "block";
+    userbar.style.display = "flex";
+    document.getElementById("userEmail").textContent = email;
+  }
+
   function initAuth() {
     if (!window.supabase || SUPABASE_URL.indexOf("__") === 0 || SUPABASE_ANON_KEY.indexOf("__") === 0) {
       authMsg.className = "";
@@ -161,15 +176,15 @@ https://exemple.com/document.pdf"></textarea>
     }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.getElementById("googl
-eBtn").addEventListener("click", async function () {
+    document.getElementById("googleBtn").addEventListener("click", async function () {
       authMsg.className = "";
       authMsg.innerHTML = '<span class="spinner"></span> Redirection vers Google…';
-      var { error } = await sb.auth.signInWithOAuth({
+      this.disabled = true;
+      var res = await sb.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: window.location.origin + window.location.pathname }
       });
-      if (error) authError("Impossible de lancer la connexion : " + error.message);
+      if (res.error) authError("Impossible de lancer la connexion : " + res.error.message);
     });
 
     document.getElementById("logoutBtn").addEventListener("click", async function () {
@@ -182,59 +197,25 @@ eBtn").addEventListener("click", async function () {
     });
 
     sb.auth.getSession().then(function (res) {
-      var session = res.data.session;
+      var session = res.data && res.data.session;
       if (session) checkAccess(session);
     });
   }
 
-  async function checkAccess(session) {
-    var email = (session.user.email || "").toLowerCase();
-    if (email === ALLOWED_EMAIL.toLowerCase()) {
-      authScreen.style.display = "none";
-      appScreen.style.display = "block";
-      userbar.style.display = "flex";
-      document.getElementById("whoami").textContent = "👋 " + email;
-    } else {
-      await sb.auth.signOut();
-      authError("⛔ Ce compte (" + email + ") n'est pas autorisé sur cette application.");
-    }
-  }
-
-  initAuth();
-
-  // ================= APPLICATION (protégée) =================
-  if (window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-
-  var drop = document.getElementById("drop");
-  var fileInput = document.getElementById("file");
-  var queueEl = document.getElementById("queue");
+  // ================= APP =================
   var items = [];
-
-  drop.addEventListener("click", function () { fileInput.click(); });
-  ["dragover", "dragenter"].forEach(function (e) {
-    drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add("hover"); });
-  });
-  ["dragleave", "drop"].forEach
-(function (e) {
-    drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove("hover"); });
-  });
-  drop.addEventListener("drop", function (ev) {
-    Array.from(ev.dataTransfer.files).forEach(addFile);
-  });
-  fileInput.addEventListener("change", function () {
-    Array.from(fileInput.files).forEach(addFile);
-    fileInput.value = "";
-  });
+  var queueEl = document.getElementById("queue");
 
   function opts() {
     return {
-      headings: document.getElementById("optHeadings").checked,
+      titles: document.getElementById("optTitles").checked,
       pageBreaks: document.getElementById("optPageBreaks").checked,
       joinHyphens: document.getElementById("optJoinHyphens").checked,
       ocr: document.getElementById("optOcr").checked
     };
   }
+
+  function setLabel(t) { document.getElementById("progressLabel").textContent = t; }
 
   function addFile(f) {
     if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) return;
@@ -257,8 +238,7 @@ eBtn").addEventListener("click", async function () {
           '<button onclick="togglePreview(' + i + ')">👁 Aperçu</button>' +
           '<button class="secondary" onclick="copyOne(' + i + ')">📋 Copier</button>' +
           '<button class="secondary" onclick="dlOne(' + i + ')">⬇️ .md</button></div>' +
-          '<textarea id="ta' + i + '" spellcheck="false"></text
-area>';
+          '<textarea id="ta' + i + '" spellcheck="false"></textarea>';
       }
       div.innerHTML = html;
       queueEl.appendChild(div);
@@ -272,22 +252,20 @@ area>';
   window.copyOne = function (i) { navigator.clipboard.writeText(items[i].md); };
   window.dlOne = function (i) { download(items[i].name + ".md", items[i].md); };
 
-  function escapeHtml(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function download(name, content) {
     var blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = name;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
+    a.remove();
   }
 
-  function setLabel(s) { document.getElementById("progressLabel").textContent = s; }
-
   function looksLikePdf(buf) {
-    if (buf.length < 200) return false;
     var head = "";
-    var n = Math.min(buf.length, 2048);
+    var n = Math.min(buf.length, 1024);
     for (var i = 0; i < n; i++) head += String.fromCharCode(buf[i]);
     return head.indexOf("%PDF-") !== -1;
   }
@@ -304,21 +282,22 @@ area>';
     // Mode jo:YYYY-MM-DD — l'API renvoie du Markdown en JSON
     var asText = new TextDecoder().decode(buf);
     try {
-      var j = JSON.parse(asText);
-      if (j && typeof j.markdown === "string" && j.markdown.trim()) return { mdText: j.markdown };
-      if (j && j.error) throw new Error(j.error);
-    } catch (e) { if (e instanceof SyntaxError === false && e && e.message && e.message.indexOf("JSON") === -1) throw e; }
+      var jo = JSON.parse(asText);
+      if (jo && typeof jo.markdown === "string" && jo.markdown.trim()) return { mdText: jo.markdown };
+      if (jo && jo.error) throw new Error(jo.error);
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) throw e;
+    }
     throw new Error("réponse non-PDF (" + buf.length + " octets)");
   }
 
   async function fetchPdf(url) {
     var errors = [];
-    // 1) Notre proxy serverless Vercel (pas de CORS, vrais en-têtes navigateur)
+    // 1) Notre proxy serverless Vercel (pas de CORS, vrais en-tetes navigateur)
     try {
       return await fetchViaOwnProxy(url);
     } catch (e) {
-      errors
-.push("proxy Vercel : " + ((e && e.message) ? e.message : String(e)));
+      errors.push("proxy Vercel : " + ((e && e.message) ? e.message : String(e)));
     }
     // 2) Secours : proxys publics
     var publicProxies = [
@@ -360,41 +339,40 @@ area>';
         }
       }
     });
-    return result.data.text || "";
+    return result.data.text;
   }
 
-  var RE_ARTICLE = /^article\s+[LDR]?\d+[^\n]{0,80}$/i;
-  var RE_BULLET = /^[-•·—]\s+/;
-  var RE_NUM_BULLET = /^\(?[a-z]\)
-\s+/;
-  var RE_PAGE_NUM = /^\s*-?\s*\d{1,4}\s*-?\s*$/;
-
-  function isAllCaps(line) {
-    var letters = line.replace(/[^A-ZÀ-Þ]/g, "");
-    var allChars = line.replace(/[^A-Za-zÀ-ÿ]/g, "");
-    return allChars.length > 0 && letters.length >= 3 && letters.length / allChars.length > 0.85;
+  function isAllCaps(s) {
+    var letters = String(s).replace(/[^A-Za-z\u00C0-\u00FF]/g, "");
+    return letters.length >= 3 && letters === letters.toUpperCase();
   }
 
   function formatPage(text, o) {
-    var lines = text.split("\n").map(function (l) { return l.replace(/\s+$/, ""); })
-      .filter(function (l) { return !RE_PAGE_NUM.test(l); });
-    var out = [], para = [];
+    var lines = text.split(/\r?\n/);
+    var out = [];
+    var buf = [];
     function flush() {
-      if (para.length) { var p = para.join(" ").replace(/\s{2,}/g, " ").trim(); if (p) out.push(p); para = []; }
-    }
-    for (var j = 0; j < lines.length; j++) {
-      var l = lines[j].trim();
-      if (!l) { flush(); continue; }
-      if (o.headings) {
-        if (isAllCaps(l) && l.length <= 90) { flush(); out.push("## " + l.replace(/[.:;·\s]+$/, "").trim()); continue; }
-        if (RE_ARTICLE.test(l)) { flush(); out.push("### " + l); continue; }
+      if (buf.length) {
+        out.push(buf.join(" ").replace(/\s+/g, " ").trim());
+        buf = [];
       }
-      if (RE_BULLET.test(l)) { flush(); out.push(l.replace(RE_BULLET, "- ")); continue; }
-      if (RE_NUM_BULLET.test(l) && l.length < 200) { flush(); out.push("- " + l); continue; }
-      para.push(l);
+    }
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].replace(/\s+$/g, "");
+      if (!line.trim()) { flush(); continue; }
+      if (o.titles && isAllCaps(line) && line.trim().length <= 90) {
+        flush();
+        out.push("## " + line.trim());
+        continue;
+      }
+      buf.push(line.trim());
+      if (/[.!?:;]\s*$/.test(line) || line.length < 40) {
+        // heuristique : fin de phrase probable -> on garde le buffer ouvert,
+        // le paragraphe sera ferme au prochain changement logique
+      }
     }
     flush();
-    return out.join("\n\n");
+    return out.filter(Boolean).join("\n\n");
   }
 
   async function convertBuffer(data, o, it) {
@@ -414,8 +392,7 @@ area>';
       var text = rows.map(function (r) { return r.parts.join(" "); }).join("\n");
 
       if (!text.replace(/\s/g, "")) {
- 
-       noText++;
+        noText++;
         if (o.ocr && window.Tesseract) {
           setLabel("🔍 OCR " + it.name + " — page " + i + "…");
           try {
@@ -425,7 +402,7 @@ area>';
               text = ocrText;
               noText--;
             }
-          } catch (e) { /* OCR échoue sur cette page, on continue */ }
+          } catch (e) { /* OCR echoue sur cette page, on continue */ }
         }
       }
 
@@ -441,6 +418,20 @@ area>';
     if (o.joinHyphens) full = full.replace(/(\p{Ll})-\s*\n\s*/gu, "$1");
     return full;
   }
+
+  document.getElementById("drop").addEventListener("click", function () { document.getElementById("fileInput").click(); });
+  document.getElementById("fileInput").addEventListener("change", function (e) {
+    Array.prototype.forEach.call(e.target.files, addFile);
+    e.target.value = "";
+  });
+  var dropEl = document.getElementById("drop");
+  dropEl.addEventListener("dragover", function (e) { e.preventDefault(); dropEl.classList.add("over"); });
+  dropEl.addEventListener("dragleave", function () { dropEl.classList.remove("over"); });
+  dropEl.addEventListener("drop", function (e) {
+    e.preventDefault();
+    dropEl.classList.remove("over");
+    Array.prototype.forEach.call(e.dataTransfer.files, addFile);
+  });
 
   document.getElementById("convertAll").addEventListener("click", async function () {
     var urls = document.getElementById("urls").value.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
@@ -463,8 +454,7 @@ area>';
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       if (it.status === "done") continue;
-      it.status = "working"; it.error = ""; it.ocrPages
- = 0; render();
+      it.status = "working"; it.error = ""; it.ocrPages = 0; render();
       setLabel("Document " + (doneCount + 1) + " / " + todo.length + " : " + it.name);
       try {
         if (it.blob) {
@@ -481,42 +471,39 @@ area>';
         it.error = (e && e.message) ? e.message : String(e);
       }
       doneCount++;
-      bar.style.width = (doneCount / todo.length * 100) + "%";
+      bar.style.width = Math.round((doneCount / todo.length) * 100) + "%";
       render();
     }
-    setLabel("Terminé : " + items.filter(function (x) { return x.status === "done"; }).length + " / " + todo.length + " convertis.");
+    setLabel("Terminé ✔");
     self.disabled = false;
   });
 
   document.getElementById("dlAll").addEventListener("click", function () {
-    items.forEach(function (it) { if (it.status === "done") download(it.name + ".md", it.md); });
+    items.filter(function (x) { return x.status === "done"; }).forEach(function (x, k) {
+      setTimeout(function () { download(x.name + ".md", x.md); }, k * 350);
+    });
   });
 
   document.getElementById("dlZip").addEventListener("click", async function () {
-    if (typeof JSZip === "undefined") { alert("JSZip non chargé — télécharge les fichiers un par un."); return; }
     var zip = new JSZip();
-    var used = {};
-    items.forEach(function (it) {
-      if (it.status !== "done") return;
-      var n = it.name + ".md";
-      if (used[n]) { used[n]++; n = it.name + "-" + used[n] + ".md"; } else used[n] = 1;
-      zip.file(n, it.md);
-    });
+    items.filter(function (x) { return x.status === "done"; }).forEach(function (x) { zip.file(x.name + ".md", x.md); });
     var blob = await zip.generateAsync({ type: "blob" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "pdf-to-markdown.zip";
+    a.download = "conversions-markdown.zip";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
+    a.remove();
   });
 
   document.getElementById("resetAll").addEventListener("click", function () {
     items = [];
-    document.getElementById("urls").value = "";
-    document.getElementById("progressWrap").style.display = "none";
-    document.getElementById("bar").style.width = "0%";
     render();
+    document.getElementById("progressWrap").style.display = "none";
+    document.getElementById("bar").style.width = "0";
   });
+
+  initAuth();
 })();
 </script>
 </body>
