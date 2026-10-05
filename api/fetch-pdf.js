@@ -2,8 +2,10 @@
 //  1) /api/fetch-pdf?url=https://...  → téléchargement classique (en-têtes navigateur)
 //  2) /api/fetch-pdf?url=jo:2026-10-04 → édition du JO via l'API officielle PISTE (Légifrance)
 //     (nécessite PISTE_CLIENT_ID et PISTE_CLIENT_SECRET dans les variables Vercel)
+//
+// NB : la version bêta de l'API Légifrance est fermée depuis juin 2023 → API stable.
 
-const LEGIFRANCE_API_BASE = process.env.LEGIFRANCE_API_BASE || "https://api.piste.gouv.fr/dila/legifrance-beta";
+const LEGIFRANCE_API_BASE = process.env.LEGIFRANCE_API_BASE || "https://api.piste.gouv.fr/dila/legifrance";
 const PISTE_TOKEN_URL = process.env.PISTE_TOKEN_URL || "https://oauth.piste.gouv.fr/oauth/token";
 const PISTE_SCOPE = process.env.PISTE_SCOPE || "openid";
 
@@ -23,7 +25,7 @@ async function getPisteToken() {
   const id = process.env.PISTE_CLIENT_ID;
   const secret = process.env.PISTE_CLIENT_SECRET;
   if (!id || !secret) {
-    throw new Error("PISTE non configuré : ajoute PISTE_CLIENT_ID et PISTE_CLIENT_SECRET dans les variables d'environnement Vercel (compte gratuit sur https://piste.gouv.fr, abonnement à l'API Légifrance).");
+    throw new Error("PISTE non configuré : ajoute PISTE_CLIENT_ID et PISTE_CLIENT_SECRET dans les variables d'environnement Vercel (compte gratuit sur https://piste.gouv.fr, catalogue → fiche Légifrance → S'abonner).");
   }
   const body = new URLSearchParams({
     grant_type: "client_credentials",
@@ -45,7 +47,7 @@ async function getPisteToken() {
   return j.access_token;
 }
 
-// Édition du JO via PISTE : essaie plusieurs chemins connus de l'API Légifrance
+// Édition du JO via PISTE : essaie plusieurs chemins de l'API Légifrance stable
 async function fetchJoViaPiste(date, token) {
   const paths = [
     "/jorf/jo/" + date,
@@ -98,8 +100,6 @@ export default async function handler(req, res) {
   if (isPrivateHost(parsed.hostname)) return res.status(400).json({ error: "Hôte non autorisé" });
 
   try {
-    // Pour Légifrance : tente d'abord avec un token PISTE en Bearer (accès officiel),
-    // puis en direct avec en-têtes navigateur.
     const isLegifrance = /(^|\.)legifrance\.gouv\.fr$/i.test(parsed.hostname);
     if (isLegifrance && process.env.PISTE_CLIENT_ID) {
       try {
