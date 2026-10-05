@@ -25,7 +25,8 @@
   .spinner { display: inline-block; width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   #appScreen { display: none; }
-  .drop { border: 2px dashed #c7d2fe; border-radius: 14px; background: #fff; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 16px; }
+  .drop { 
+border: 2px dashed #c7d2fe; border-radius: 14px; background: #fff; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 16px; }
   .drop.hover { border-color: #4f46e5; background: #eef2ff; }
   .drop .icon { font-size: 38px; }
   .drop strong { display: block; margin-top: 8px; font-size: 16px; }
@@ -45,6 +46,7 @@
   .item { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .item .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .item .name { font-weight: 600; font-size: 14px; word-break: break-all; }
+
   .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
   .badge.pending { background: #f3f4f6; color: #6b7280; }
   .badge.working { background: #e0e7ff; color: #4338ca; }
@@ -78,7 +80,8 @@
   <h2>Accès privé</h2>
   <p>Cet outil est réservé à son propriétaire.<br />Connecte-toi avec ton compte Google.</p>
   <button class="gbtn" id="googleBtn">
-    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C36.68 2.66 30.83 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-.86-.76-1.83-.76-2.59s.27-1.73.73-2.58L2.56 13.22C.95 16.47 0 20.12 0 24s.95 7.53 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.83 0 12.55-2.25 16.68-6.13l-7.73-6c-2.15 1.45-5 2.3-8.95 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C36.68 2.66 30.83 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.9
+8 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-.86-.76-1.83-.76-2.59s.27-1.73.73-2.58L2.56 13.22C.95 16.47 0 20.12 0 24s.95 7.53 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.83 0 12.55-2.25 16.68-6.13l-7.73-6c-2.15 1.45-5 2.3-8.95 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
     Se connecter avec Google
   </button>
   <div id="authMsg"></div>
@@ -110,7 +113,8 @@ https://exemple.com/document.pdf"></textarea>
   <button id="convertAll" style="width:100%; padding: 13px; font-size: 15px;">🚀 Convertir tout</button>
 
   <div class="bar-outer" id="progressWrap">
-    <div class="bar"><div id="bar"></div></div>
+    <div class="bar
+"><div id="bar"></div></div>
     <small id="progressLabel"></small>
   </div>
 
@@ -157,7 +161,8 @@ https://exemple.com/document.pdf"></textarea>
     }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.getElementById("googleBtn").addEventListener("click", async function () {
+    document.getElementById("googl
+eBtn").addEventListener("click", async function () {
       authMsg.className = "";
       authMsg.innerHTML = '<span class="spinner"></span> Redirection vers Google…';
       var { error } = await sb.auth.signInWithOAuth({
@@ -210,7 +215,8 @@ https://exemple.com/document.pdf"></textarea>
   ["dragover", "dragenter"].forEach(function (e) {
     drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add("hover"); });
   });
-  ["dragleave", "drop"].forEach(function (e) {
+  ["dragleave", "drop"].forEach
+(function (e) {
     drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove("hover"); });
   });
   drop.addEventListener("drop", function (ev) {
@@ -251,7 +257,8 @@ https://exemple.com/document.pdf"></textarea>
           '<button onclick="togglePreview(' + i + ')">👁 Aperçu</button>' +
           '<button class="secondary" onclick="copyOne(' + i + ')">📋 Copier</button>' +
           '<button class="secondary" onclick="dlOne(' + i + ')">⬇️ .md</button></div>' +
-          '<textarea id="ta' + i + '" spellcheck="false"></textarea>';
+          '<textarea id="ta' + i + '" spellcheck="false"></text
+area>';
       }
       div.innerHTML = html;
       queueEl.appendChild(div);
@@ -293,8 +300,15 @@ https://exemple.com/document.pdf"></textarea>
       throw new Error(msg);
     }
     var buf = new Uint8Array(await res.arrayBuffer());
-    if (!looksLikePdf(buf)) throw new Error("réponse non-PDF (" + buf.length + " octets)");
-    return buf;
+    if (looksLikePdf(buf)) return buf;
+    // Mode jo:YYYY-MM-DD — l'API renvoie du Markdown en JSON
+    var asText = new TextDecoder().decode(buf);
+    try {
+      var j = JSON.parse(asText);
+      if (j && typeof j.markdown === "string" && j.markdown.trim()) return { mdText: j.markdown };
+      if (j && j.error) throw new Error(j.error);
+    } catch (e) { if (e instanceof SyntaxError === false && e && e.message && e.message.indexOf("JSON") === -1) throw e; }
+    throw new Error("réponse non-PDF (" + buf.length + " octets)");
   }
 
   async function fetchPdf(url) {
@@ -303,7 +317,8 @@ https://exemple.com/document.pdf"></textarea>
     try {
       return await fetchViaOwnProxy(url);
     } catch (e) {
-      errors.push("proxy Vercel : " + ((e && e.message) ? e.message : String(e)));
+      errors
+.push("proxy Vercel : " + ((e && e.message) ? e.message : String(e)));
     }
     // 2) Secours : proxys publics
     var publicProxies = [
@@ -350,7 +365,8 @@ https://exemple.com/document.pdf"></textarea>
 
   var RE_ARTICLE = /^article\s+[LDR]?\d+[^\n]{0,80}$/i;
   var RE_BULLET = /^[-•·—]\s+/;
-  var RE_NUM_BULLET = /^\(?[a-z]\)\s+/;
+  var RE_NUM_BULLET = /^\(?[a-z]\)
+\s+/;
   var RE_PAGE_NUM = /^\s*-?\s*\d{1,4}\s*-?\s*$/;
 
   function isAllCaps(line) {
@@ -398,7 +414,8 @@ https://exemple.com/document.pdf"></textarea>
       var text = rows.map(function (r) { return r.parts.join(" "); }).join("\n");
 
       if (!text.replace(/\s/g, "")) {
-        noText++;
+ 
+       noText++;
         if (o.ocr && window.Tesseract) {
           setLabel("🔍 OCR " + it.name + " — page " + i + "…");
           try {
@@ -429,7 +446,7 @@ https://exemple.com/document.pdf"></textarea>
     var urls = document.getElementById("urls").value.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
     urls.forEach(function (u) {
       if (!items.some(function (x) { return x.url === u; })) {
-        var name = u.split("/").pop().replace(/\.pdf.*$/i, "") || "document-" + (items.length + 1);
+        var name = /^jo:/i.test(u) ? "JO " + u.slice(3) : (u.split("/").pop().replace(/\.pdf.*$/i, "") || "document-" + (items.length + 1));
         items.push({ name: name, status: "pending", md: "", error: "", url: u, ocrPages: 0 });
       }
     });
@@ -446,13 +463,18 @@ https://exemple.com/document.pdf"></textarea>
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       if (it.status === "done") continue;
-      it.status = "working"; it.error = ""; it.ocrPages = 0; render();
+      it.status = "working"; it.error = ""; it.ocrPages
+ = 0; render();
       setLabel("Document " + (doneCount + 1) + " / " + todo.length + " : " + it.name);
       try {
-        var data;
-        if (it.blob) data = new Uint8Array(await it.blob.arrayBuffer());
-        else data = await fetchPdf(it.url);
-        it.md = await convertBuffer(data, o, it);
+        if (it.blob) {
+          var bufData = new Uint8Array(await it.blob.arrayBuffer());
+          it.md = await convertBuffer(bufData, o, it);
+        } else {
+          var data = await fetchPdf(it.url);
+          if (data && data.mdText) it.md = data.mdText;
+          else it.md = await convertBuffer(data, o, it);
+        }
         it.status = "done";
       } catch (e) {
         it.status = "error";
