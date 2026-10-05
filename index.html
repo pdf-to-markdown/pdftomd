@@ -23,6 +23,7 @@
   .urlbox small { color: #6b7280; font-size: 12px; display: block; margin-top: 6px; }
   .options { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 13px; color: #374151; }
   .options label { display: flex; align-items: center; gap: 6px; }
+  .options .tip { width: 100%; color: #9ca3af; font-size: 11.5px; }
   .bar-outer { display: none; background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .bar { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
   .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg,#4f46e5,#7c3aed); transition: width .2s; }
@@ -44,6 +45,7 @@
   .item textarea { width: 100%; min-height: 260px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.55; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 10px; resize: vertical; white-space: pre; display: none; }
   .item textarea.open { display: block; }
   .item .err { color: #991b1b; font-size: 13px; margin-top: 8px; }
+  .item .note { color: #92400e; font-size: 12px; margin-top: 6px; }
   .global-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
   footer { text-align: center; color: #9ca3af; font-size: 12px; padding: 20px; }
 </style>
@@ -51,7 +53,7 @@
 <body>
 <header>
   <h1>📄 → ✍️ PDF → Markdown</h1>
-  <p>Lot (10+ fichiers) ou par URL · 100 % local · aucun fichier stocké</p>
+  <p>Lot (10+ fichiers) ou par URL · OCR intégré · 100 % local · aucun fichier stocké</p>
 </header>
 <main>
   <div class="drop" id="drop">
@@ -72,6 +74,8 @@ https://exemple.com/document.pdf"></textarea>
     <label><input type="checkbox" id="optHeadings" checked /> Détecter les titres</label>
     <label><input type="checkbox" id="optPageBreaks" checked /> Séparateur de pages</label>
     <label><input type="checkbox" id="optJoinHyphens" checked /> Recoller les mots coupés</label>
+    <label><input type="checkbox" id="optOcr" checked /> 🔍 OCR (PDF scannés, fr+en)</label>
+    <span class="tip">L'OCR se déclenche automatiquement seulement sur les pages sans texte — les PDF normaux restent rapides.</span>
   </div>
 
   <button id="convertAll" style="width:100%; padding: 13px; font-size: 15px;">🚀 Convertir tout</button>
@@ -89,10 +93,11 @@ https://exemple.com/document.pdf"></textarea>
 
   <div class="queue" id="queue"></div>
 </main>
-<footer>Conversion heuristique du texte — les PDF scannés (images) nécessitent un OCR.</footer>
+<footer>OCR via Tesseract.js · Conversion heuristique du texte · tout se passe dans ton navigateur.</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function () {
   if (window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -101,7 +106,7 @@ https://exemple.com/document.pdf"></textarea>
   var drop = document.getElementById("drop");
   var fileInput = document.getElementById("file");
   var queueEl = document.getElementById("queue");
-  var items = []; // {name, status, md, error, url}
+  var items = []; // {name, status, md, error, url, ocrPages}
 
   drop.addEventListener("click", function () { fileInput.click(); });
   ["dragover", "dragenter"].forEach(function (e) {
@@ -122,13 +127,14 @@ https://exemple.com/document.pdf"></textarea>
     return {
       headings: document.getElementById("optHeadings").checked,
       pageBreaks: document.getElementById("optPageBreaks").checked,
-      joinHyphens: document.getElementById("optJoinHyphens").checked
+      joinHyphens: document.getElementById("optJoinHyphens").checked,
+      ocr: document.getElementById("optOcr").checked
     };
   }
 
   function addFile(f) {
     if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) return;
-    items.push({ name: f.name.replace(/\.pdf$/i, ""), status: "pending", md: "", error: "", blob: f });
+    items.push({ name: f.name.replace(/\.pdf$/i, ""), status: "pending", md: "", error: "", blob: f, ocrPages: 0 });
     render();
   }
 
@@ -141,6 +147,7 @@ https://exemple.com/document.pdf"></textarea>
       var b = badges[it.status];
       var html = '<div class="head"><span class="name">' + escapeHtml(it.name) + '</span><span class="badge ' + b[0] + '">' + b[1] + '</span></div>';
       if (it.error) html += '<div class="err">' + escapeHtml(it.error) + '</div>';
+      if (it.ocrPages > 0) html += '<div class="note">🔍 ' + it.ocrPages + ' page(s) lue(s) par OCR (scannées).</div>';
       if (it.status === "done") {
         html += '<div class="actions">' +
           '<button onclick="togglePreview(' + i + ')">👁 Aperçu</button>' +
@@ -170,6 +177,8 @@ https://exemple.com/document.pdf"></textarea>
     URL.revokeObjectURL(a.href);
   }
 
+  function setLabel(s) { document.getElementById("progressLabel").textContent = s; }
+
   // ---- Récupération par URL (direct, puis proxys CORS en secours) ----
   async function fetchPdf(url) {
     var attempts = [
@@ -192,6 +201,26 @@ https://exemple.com/document.pdf"></textarea>
       } catch (e) { lastErr = e; }
     }
     throw lastErr || new Error("Téléchargement impossible");
+  }
+
+  // ---- OCR d'une page (rendu canvas haute résolution + Tesseract) ----
+  async function ocrPage(page, docName, pageNum) {
+    var viewport = page.getViewport({ scale: 2 });
+    var canvas = document.createElement("canvas");
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+    var result = await Tesseract.recognize(canvas, "fra+eng", {
+      logger: function (m) {
+        if (m.status === "recognizing text") {
+          setLabel("🔍 OCR " + docName + " — page " + pageNum + " : " + Math.round(m.progress * 100) + "%");
+        }
+      }
+    });
+    return result.data.text || "";
   }
 
   // ---- Heuristiques de mise en forme ----
@@ -228,7 +257,7 @@ https://exemple.com/document.pdf"></textarea>
     return out.join("\n\n");
   }
 
-  async function convertBuffer(data, o) {
+  async function convertBuffer(data, o, it) {
     var pdf = await window.pdfjsLib.getDocument({ data: data }).promise;
     var pages = [], noText = 0;
     for (var i = 1; i <= pdf.numPages; i++) {
@@ -243,23 +272,42 @@ https://exemple.com/document.pdf"></textarea>
         else rows.push({ y: y, parts: [item.str] });
       });
       var text = rows.map(function (r) { return r.parts.join(" "); }).join("\n");
-      if (!text.replace(/\s/g, "")) noText++;
+
+      // Page sans texte → OCR si activé
+      if (!text.replace(/\s/g, "")) {
+        noText++;
+        if (o.ocr && window.Tesseract) {
+          setLabel("🔍 OCR " + it.name + " — page " + i + "…");
+          try {
+            var ocrText = await ocrPage(page, it.name, i);
+            if (ocrText.replace(/\s/g, "")) {
+              it.ocrPages++;
+              text = ocrText;
+              noText--;
+            }
+          } catch (e) { /* OCR échoue sur cette page, on continue */ }
+        }
+      }
+
       var md = formatPage(text, o);
       if (md.trim()) pages.push((o.pageBreaks ? "<!-- page " + i + " -->\n\n" : "") + md);
     }
+    if (noText === pdf.numPages) {
+      throw new Error(o.ocr
+        ? "Aucun texte extrait même après OCR (images illisibles ou corrompues)."
+        : "Aucun texte extrait : PDF scanné — coche l'option OCR.");
+    }
     var full = pages.join("\n\n");
     if (o.joinHyphens) full = full.replace(/(\p{Ll})-\s*\n\s*/gu, "$1");
-    if (noText === pdf.numPages) throw new Error("Aucun texte extrait : PDF scanné (OCR nécessaire).");
     return full;
   }
 
   document.getElementById("convertAll").addEventListener("click", async function () {
-    // Ajouter les URLs saisies
     var urls = document.getElementById("urls").value.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
     urls.forEach(function (u) {
       if (!items.some(function (x) { return x.url === u; })) {
         var name = u.split("/").pop().replace(/\.pdf.*$/i, "") || "document-" + (items.length + 1);
-        items.push({ name: name, status: "pending", md: "", error: "", url: u });
+        items.push({ name: name, status: "pending", md: "", error: "", url: u, ocrPages: 0 });
       }
     });
     if (!items.length) { alert("Ajoute des fichiers PDF ou des URLs."); return; }
@@ -275,13 +323,13 @@ https://exemple.com/document.pdf"></textarea>
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       if (it.status === "done") continue;
-      it.status = "working"; it.error = ""; render();
-      document.getElementById("progressLabel").textContent = "Document " + (doneCount + 1) + " / " + todo.length + " : " + it.name;
+      it.status = "working"; it.error = ""; it.ocrPages = 0; render();
+      setLabel("Document " + (doneCount + 1) + " / " + todo.length + " : " + it.name);
       try {
         var data;
         if (it.blob) data = new Uint8Array(await it.blob.arrayBuffer());
         else data = await fetchPdf(it.url);
-        it.md = await convertBuffer(data, o);
+        it.md = await convertBuffer(data, o, it);
         it.status = "done";
       } catch (e) {
         it.status = "error";
@@ -291,7 +339,7 @@ https://exemple.com/document.pdf"></textarea>
       bar.style.width = (doneCount / todo.length * 100) + "%";
       render();
     }
-    document.getElementById("progressLabel").textContent = "Terminé : " + items.filter(function (x) { return x.status === "done"; }).length + " / " + todo.length + " convertis.";
+    setLabel("Terminé : " + items.filter(function (x) { return x.status === "done"; }).length + " / " + todo.length + " convertis.");
     self.disabled = false;
   });
 
