@@ -1,36 +1,40 @@
 # pdftomd
 
-Convertisseur **PDF → Markdown** — lot (10+ fichiers), par URL, OCR intégré, auth Google via Supabase (accès privé à un seul compte).
+Convertisseur **PDF → Markdown** — lot, URLs, OCR, auth Google/Supabase, proxy Vercel, **accès officiel Légifrance via PISTE**.
 
-## 🔐 Secrets : rien dans le repo
+## 🔐 Secrets (variables d'environnement Vercel — rien dans le repo)
 
-Le repo ne contient **aucune clé**. `index.html` a deux placeholders (`__SUPABASE_URL__`, `__SUPABASE_ANON_KEY__`) remplacés **au build Vercel** (`build.sh`) par les variables d'environnement :
-
-Dans **Vercel → ton projet → Settings → Environment Variables**, ajoute :
-
-| Nom | Valeur |
+| Nom | Où la trouver |
 |---|---|
-| `SUPABASE_URL` | `https://lpvivewmfsnvyvsaecey.supabase.co` |
-| `SUPABASE_ANON_KEY` | ta clé `anon / public` (Supabase → Settings → API) |
+| `SUPABASE_URL` | Supabase → Settings → API |
+| `SUPABASE_ANON_KEY` | Supabase → Settings → API (anon public) |
+| `PISTE_CLIENT_ID` | https://piste.gouv.fr → Mon compte → mes applications |
+| `PISTE_CLIENT_SECRET` | idem |
 
-Cochent aussi `pdftomd-git-main-tmcws.vercel.app` si besoin. Redéploie après ajout.
+Optionnels : `PISTE_TOKEN_URL` (défaut https://oauth.piste.gouv.fr/oauth/token), `PISTE_SCOPE` (défaut openid), `LEGIFRANCE_API_BASE` (défaut https://api.piste.gouv.fr/dila/legifrance-beta).
 
-### Config Supabase (une seule fois)
+## 🇫🇷 Accès Légifrance officiel (PISTE) — mise en place (une seule fois)
 
-1. Authentication → Providers → **Google** : activer (Client ID/Secret OAuth Google).
-   - Redirection Google Cloud : `https://lpvivewmfsnvyvsaecey.supabase.co/auth/v1/callback`
-2. Authentication → URL Configuration :
-   - Site URL : `https://pdftomd-olive.vercel.app`
-   - Redirect URLs : `https://pdftomd-olive.vercel.app` et `https://pdftomd-olive.vercel.app/index.html`
+1. Crée un compte gratuit sur **https://piste.gouv.fr** (via FranceConnect ou e-mail pro).
+2. Dans le catalogue PISTE, abonne ton application à l'**API Légifrance**.
+3. Crée une application : note le **Client ID** et le **Client Secret**.
+4. Ajoute-les dans Vercel → Settings → Environment Variables (`PISTE_CLIENT_ID`, `PISTE_CLIENT_SECRET`).
+5. Redéploie.
 
-Seul **contact@mail.martytheo.com** est autorisé (`ALLOWED_EMAIL` dans `index.html`).
+Deux usages :
+- **Édition du JO** : colle dans l'app `jo:2026-10-04` (date de l'édition) → le proxy interroge l'API officielle et renvoie le PDF.
+- **URL Légifrance** : si les clés PISTE sont présentes, le proxy tente d'abord l'accès authentifié officiel avant le mode direct.
+
+> L'endpoint exact du PDF du JO dans l'API Légifrance peut varier selon ta souscription PISTE : le proxy essaie plusieurs chemins et renvoie les réponses de l'API dans le message d'erreur — copie-le-moi si besoin, j'ajusterai le chemin.
 
 ## ✨ Fonctionnalités
 
-- Lot (10+ PDF), URLs multiples (proxy CORS en secours)
+- Lot (10+ PDF), URLs multiples (proxy Vercel + proxys publics en secours)
+- `jo:AAAA-MM-JJ` → JO du jour via API officielle
 - OCR Tesseract.js fr+en automatique sur pages scannées
-- 100 % local, titres/listes/césures, sortie `.md` ou `.zip`
+- Auth Google (Supabase), accès réservé à un seul compte
+- Titres/listes/césures, sortie `.md` ou `.zip`
 
 ## 🚀
 
-https://pdftomd-olive.vercel.app — connexion Google requise.
+https://pdftomd-olive.vercel.app
