@@ -7,7 +7,6 @@ module.exports = async function (req, res) {
   if (!url) { res.status(400).json({ error: "Parametre url manquant." }); return; }
 
   // ---------- Mode JO (API PISTE) ----------
-  // accepte jo:date, JO:date, "jo : date", espaces multiples, etc.
   var joMatch = url.match(/^jo\s*:\s*(\d{4}-\d{2}-\d{2})\s*$/i);
   if (/^jo\s*:/i.test(url)) {
     try {
@@ -60,11 +59,15 @@ var LF_BASE = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app";
 async function getPisteToken() {
   var id = process.env.PISTE_CLIENT_ID;
   var secret = process.env.PISTE_CLIENT_SECRET;
-  if (!id || !secret) throw new Error("PISTE_CLIENT_ID / PISTE_CLIENT_SECRET manquants dans les variables Vercel.");
+  if (!id) throw new Error("PISTE_CLIENT_ID manquant dans les variables Vercel.");
+  if (!secret) throw new Error("PISTE_CLIENT_SECRET manquant dans les variables Vercel.");
+  id = String(id).trim();
+  secret = String(secret).trim();
+  var diag = "client_id utilise : [" + id.slice(0, 8) + "\u2026] (" + id.length + " caracteres), secret : " + secret.length + " caracteres";
   var baseBody = "grant_type=client_credentials&scope=openid";
   var attempts = [
-    { label: "Basic auth", headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": "Basic " + Buffer.from(id + ":" + secret).toString("base64") }, body: baseBody },
-    { label: "body params", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: baseBody + "&client_id=" + encodeURIComponent(id) + "&client_secret=" + encodeURIComponent(secret) }
+    { label: "body params", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: baseBody + "&client_id=" + encodeURIComponent(id) + "&client_secret=" + encodeURIComponent(secret) },
+    { label: "Basic auth", headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": "Basic " + Buffer.from(id + ":" + secret).toString("base64") }, body: baseBody }
   ];
   var errs = [];
   for (var a = 0; a < attempts.length; a++) {
@@ -75,7 +78,7 @@ async function getPisteToken() {
     if (r.ok && j.access_token) return j.access_token;
     errs.push(attempts[a].label + " : HTTP " + r.status + " : " + String(j.error_description || j.error || t).slice(0, 200));
   }
-  throw new Error("Token PISTE refuse. " + errs.join(" | "));
+  throw new Error("Token PISTE refuse (" + diag + "). " + errs.join(" | "));
 }
 
 async function lfPost(token, path, payload) {
