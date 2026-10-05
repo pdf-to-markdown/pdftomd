@@ -57,26 +57,21 @@ async function getPisteToken() {
   var id = process.env.PISTE_CLIENT_ID;
   var secret = process.env.PISTE_CLIENT_SECRET;
   if (!id || !secret) throw new Error("PISTE_CLIENT_ID / PISTE_CLIENT_SECRET manquants dans les variables Vercel.");
-  var body = new URLSearchParams({
-    grant_type: "client_credentials",
-    client_id: id,
-    client_secret: secret,
-    scope: "openid"
-  }).toString();
-  var r = await fetch(PISTE_TOKEN_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body
-  });
-  var txt = await r.text();
-  var j;
-  try { j = JSON.parse(txt); } catch (e) {
-    throw new Error("Token PISTE : reponse non-JSON (HTTP " + r.status + ") : " + txt.slice(0, 300));
+  var baseBody = "grant_type=client_credentials&scope=openid";
+  var attempts = [
+    { label: "Basic auth", headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": "Basic " + Buffer.from(id + ":" + secret).toString("base64") }, body: baseBody },
+    { label: "body params", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: baseBody + "&client_id=" + encodeURIComponent(id) + "&client_secret=" + encodeURIComponent(secret) }
+  ];
+  var errs = [];
+  for (var a = 0; a < attempts.length; a++) {
+    var r = await fetch(PISTE_TOKEN_URL, { method: "POST", headers: attempts[a].headers, body: attempts[a].body });
+    var t = await r.text();
+    var j;
+    try { j = JSON.parse(t); } catch (e) { errs.push(attempts[a].label + " : reponse non-JSON (HTTP " + r.status + ") : " + t.slice(0, 200)); continue; }
+    if (r.ok && j.access_token) return j.access_token;
+    errs.push(attempts[a].label + " : HTTP " + r.status + " : " + String(j.error_description || j.error || t).slice(0, 200));
   }
-  if (!r.ok || !j.access_token) {
-    throw new Error("Token PISTE refuse (HTTP " + r.status + ") : " + JSON.stringify(j).slice(0, 300));
-  }
-  return j.access_token;
+  throw new Error("Token PISTE refuse. " + errs.join(" | "));
 }
 
 async function lfPost(token, path, payload) {
@@ -129,8 +124,7 @@ async function joToMarkdown(date) {
       if (node.id || node.cidTexte) meta.push("id : " + (node.id || node.cidTexte));
       if (node.nor) meta.push("NOR : " + node.nor);
       if (node.nature) meta.push(node.nature);
-      if (meta.length) lines.push("");
-      if (meta.length) lines.push("_" + meta.join(" · ") + "_");
+      if (meta.length) { lines.push(""); lines.push("_" + meta.join(" · ") + "_"); }
       if (node.id || node.cidTexte) {
         var lid = node.id || node.cidTexte;
         lines.push("");
@@ -159,8 +153,8 @@ async function joToMarkdown(date) {
       try {
         var rt = await lfPost(token, textePaths[t], { id: contenus[c], texteId: contenus[c], cidTexte: contenus[c], date: date });
         if (rt.status === 200 && rt.json && !rt.parseError) {
-          var txt = extractText(rt.json);
-          if (txt && txt.length > 100) fullTexts.push(txt);
+          var tx = extractText(rt.json);
+          if (tx && tx.length > 100) fullTexts.push(tx);
         }
       } catch (e) { /* on continue */ }
     }
