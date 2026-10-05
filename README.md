@@ -1,37 +1,36 @@
 # pdftomd
 
-Convertisseur **PDF → Markdown** — lot (10+ fichiers), par URL, OCR intégré, **authentification Google via Supabase** (accès privé).
+Convertisseur **PDF → Markdown** — lot (10+ fichiers), par URL, OCR intégré, auth Google via Supabase (accès privé à un seul compte).
 
-## 🔐 Authentification
+## 🔐 Secrets : rien dans le repo
 
-L'app est verrouillée : seul le compte **contact@mail.martytheo.com** est autorisé (liste blanche codée dans `index.html`, `ALLOWED_EMAIL`). Toute autre session Google est déconnectée automatiquement.
+Le repo ne contient **aucune clé**. `index.html` a deux placeholders (`__SUPABASE_URL__`, `__SUPABASE_ANON_KEY__`) remplacés **au build Vercel** (`build.sh`) par les variables d'environnement :
 
-### Mise en place (une seule fois)
+Dans **Vercel → ton projet → Settings → Environment Variables**, ajoute :
 
-1. **Crée un projet** sur [supabase.com](https://supabase.com) (plan gratuit suffit).
-2. Dans Supabase → **Authentication → Providers → Google** : active le provider.
-   - Il te faut un **Client OAuth Google** : [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) → « Créer des identifiants → ID client OAuth » (application Web).
-   - **URI de redirection autorisée** dans Google Cloud : `https://VOTRE-PROJET.supabase.co/auth/v1/callback` (remplace par ton ref de projet Supabase).
-   - Copie le **Client ID** et le **Client Secret** Google dans Supabase.
-3. Dans Supabase → **Authentication → URL Configuration** :
-   - **Site URL** : `https://pdftomd-olive.vercel.app`
-   - **Redirect URLs** : ajoute `https://pdftomd-olive.vercel.app` et `https://pdftomd-olive.vercel.app/index.html`
-4. Dans `index.html`, remplace en haut du `<script>` :
-   - `SUPABASE_URL` → `https://VOTRE-PROJET.supabase.co` (Settings → API → Project URL)
-   - `SUPABASE_ANON_KEY` → la clé `anon / public` (Settings → API)
-5. Commit → Vercel redéploie.
+| Nom | Valeur |
+|---|---|
+| `SUPABASE_URL` | `https://lpvivewmfsnvyvsaecey.supabase.co` |
+| `SUPABASE_ANON_KEY` | ta clé `anon / public` (Supabase → Settings → API) |
 
-> ℹ️ La clé `anon` est **publique par conception** (visible côté client). La sécurité réelle vient du provider Google + de la liste blanche `ALLOWED_EMAIL` dans le code. Pour une protection côté serveur (middleware), il faudrait un backend — pas nécessaire ici car l'app n'a aucune donnée côté serveur.
+Cochent aussi `pdftomd-git-main-tmcws.vercel.app` si besoin. Redéploie après ajout.
+
+### Config Supabase (une seule fois)
+
+1. Authentication → Providers → **Google** : activer (Client ID/Secret OAuth Google).
+   - Redirection Google Cloud : `https://lpvivewmfsnvyvsaecey.supabase.co/auth/v1/callback`
+2. Authentication → URL Configuration :
+   - Site URL : `https://pdftomd-olive.vercel.app`
+   - Redirect URLs : `https://pdftomd-olive.vercel.app` et `https://pdftomd-olive.vercel.app/index.html`
+
+Seul **contact@mail.martytheo.com** est autorisé (`ALLOWED_EMAIL` dans `index.html`).
 
 ## ✨ Fonctionnalités
 
-- **Lot** : 10+ PDF d'un coup
-- **Par URL** : une URL par ligne, proxy CORS en secours
-- **OCR Tesseract.js (fr+en)** : automatique sur les pages scannées
-- **100 % local** : aucune donnée envoyée (hors auth Google/Supabase)
-- Titres, listes, recollage des césures, séparateurs de pages
-- Sortie : `.md` individuels ou `.zip`
+- Lot (10+ PDF), URLs multiples (proxy CORS en secours)
+- OCR Tesseract.js fr+en automatique sur pages scannées
+- 100 % local, titres/listes/césures, sortie `.md` ou `.zip`
 
-## 🚀 Utilisation
+## 🚀
 
-En ligne : https://pdftomd-olive.vercel.app — connexion Google requise.
+https://pdftomd-olive.vercel.app — connexion Google requise.

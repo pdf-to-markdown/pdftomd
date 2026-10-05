@@ -14,7 +14,6 @@
   header .userbar { margin-top: 12px; font-size: 13px; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
   header .userbar button { background: rgba(255,255,255,.18); padding: 6px 14px; font-size: 12.5px; }
   main { max-width: 1000px; margin: 0 auto; padding: 22px 14px 60px; }
-  /* ---- Écran d'authentification ---- */
   #authScreen { max-width: 420px; margin: 60px auto; background: #fff; border-radius: 18px; padding: 36px 30px; text-align: center; box-shadow: 0 8px 30px rgba(79,70,229,.12); }
   #authScreen h2 { margin: 0 0 8px; font-size: 22px; }
   #authScreen p { color: #6b7280; font-size: 14px; margin: 0 0 24px; }
@@ -26,7 +25,6 @@
   #authMsg.ok { color: #065f46; }
   .spinner { display: inline-block; width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  /* ---- App ---- */
   #appScreen { display: none; }
   .drop { border: 2px dashed #c7d2fe; border-radius: 14px; background: #fff; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 16px; }
   .drop.hover { border-color: #4f46e5; background: #eef2ff; }
@@ -76,7 +74,6 @@
   </div>
 </header>
 
-<!-- ======== ÉCRAN DE CONNEXION ======== -->
 <div id="authScreen">
   <div class="lock">🔐</div>
   <h2>Accès privé</h2>
@@ -85,10 +82,9 @@
     <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C36.68 2.66 30.83 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-.86-.76-1.83-.76-2.59s.27-1.73.73-2.58L2.56 13.22C.95 16.47 0 20.12 0 24s.95 7.53 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.83 0 12.55-2.25 16.68-6.13l-7.73-6c-2.15 1.45-5 2.3-8.95 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
     Se connecter avec Google
   </button>
-  <div id="authMsg"><span class="spinner"></span></div>
+  <div id="authMsg"></div>
 </div>
 
-<!-- ======== APPLICATION ======== -->
 <main id="appScreen">
   <div class="drop" id="drop">
     <div class="icon">📄</div>
@@ -136,13 +132,13 @@ https://exemple.com/document.pdf"></textarea>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function () {
-  // ================= CONFIGURATION SUPABASE =================
-  // À remplir après création du projet Supabase (voir README) :
-  var SUPABASE_URL = "https://VOTRE-PROJET.supabase.co";
-  var SUPABASE_ANON_KEY = "VOTRE_CLE_ANON_PUBLIQUE";
-  // Seul ce compte est autorisé :
+  // ==== CONFIG INJECTÉE AU BUILD (vercel.json + build.sh + variables Vercel) ====
+  // Aucun secret n'est stocké dans ce repo : les placeholders ci-dessous sont
+  // remplacés par les variables d'environnement Vercel au moment du build.
+  var SUPABASE_URL = "__SUPABASE_URL__";
+  var SUPABASE_ANON_KEY = "__SUPABASE_ANON_KEY__";
   var ALLOWED_EMAIL = "contact@mail.martytheo.com";
-  // ==========================================================
+  // ===========================================================================
 
   var authScreen = document.getElementById("authScreen");
   var appScreen = document.getElementById("appScreen");
@@ -157,10 +153,9 @@ https://exemple.com/document.pdf"></textarea>
   }
 
   function initAuth() {
-    if (!window.supabase || SUPABASE_URL.indexOf("VOTRE-PROJET") !== -1) {
-      authError.textContent = "";
+    if (!window.supabase || SUPABASE_URL.indexOf("__") === 0 || SUPABASE_ANON_KEY.indexOf("__") === 0) {
       authMsg.className = "";
-      authMsg.innerHTML = "⚙️ Configuration Supabase manquante — remplis SUPABASE_URL et SUPABASE_ANON_KEY dans index.html.";
+      authMsg.innerHTML = "⚙️ Configuration manquante — définis SUPABASE_URL et SUPABASE_ANON_KEY dans les variables d'environnement Vercel.";
       return;
     }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -187,7 +182,6 @@ https://exemple.com/document.pdf"></textarea>
     sb.auth.getSession().then(function (res) {
       var session = res.data.session;
       if (session) checkAccess(session);
-      else { authMsg.textContent = ""; authMsg.innerHTML = ""; }
     });
   }
 
