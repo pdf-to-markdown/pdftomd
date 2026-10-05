@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PDF → Markdown</title>
+<style>
+  :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif; color: #111827; background: #f6f7fb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; }
+  header { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; padding: 26px 20px; text-align: center; }
+  header h1 { margin: 0 0 6px; font-size: 24px; }
+  header p { margin: 0; opacity: .85; font-size: 14px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 22px 14px 60px; }
+  .drop { border: 2px dashed #c7d2fe; border-radius: 14px; background: #fff; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 16px; }
+  .drop.hover { border-color: #4f46e5; background: #eef2ff; }
+  .drop .icon { font-size: 38px; }
+  .drop strong { display: block; margin-top: 8px; font-size: 16px; }
+  .drop small { color: #6b7280; }
+  .urlbox { background: #fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .urlbox label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 8px; }
+  .urlbox textarea { width: 100%; min-height: 70px; font-size: 13px; font-family: ui-monospace, Menlo, Consolas, monospace; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; resize: vertical; }
+  .urlbox small { color: #6b7280; font-size: 12px; display: block; margin-top: 6px; }
+  .options { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 13px; color: #374151; }
+  .options label { display: flex; align-items: center; gap: 6px; }
+  .bar-outer { display: none; background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .bar { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg,#4f46e5,#7c3aed); transition: width .2s; }
+  .bar-outer small { color: #6b7280; }
+  .queue { display: flex; flex-direction: column; gap: 10px; }
+  .item { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .item .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .item .name { font-weight: 600; font-size: 14px; word-break: break-all; }
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .badge.pending { background: #f3f4f6; color: #6b7280; }
+  .badge.working { background: #e0e7ff; color: #4338ca; }
+  .badge.done { background: #d1fae5; color: #065f46; }
+  .badge.error { background: #fee2e2; color: #991b1b; }
+  .item .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button { border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; background: #4f46e5; color: #fff; }
+  button:hover { background: #4338ca; }
+  button.secondary { background: #e5e7eb; color: #374151; }
+  button.secondary:hover { background: #d1d5db; }
+  .item textarea { width: 100%; min-height: 260px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.55; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 10px; resize: vertical; white-space: pre; display: none; }
+  .item textarea.open { display: block; }
+  .item .err { color: #991b1b; font-size: 13px; margin-top: 8px; }
+  .global-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+  footer { text-align: center; color: #9ca3af; font-size: 12px; padding: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📄 → ✍️ PDF → Markdown</h1>
+  <p>Lot (10+ fichiers) ou par URL · 100 % local · aucun fichier stocké</p>
+</header>
+<main>
+  <div class="drop" id="drop">
+    <div class="icon">📄</div>
+    <strong>Glisse tes PDF ici (plusieurs à la fois), ou clique pour choisir</strong>
+    <small>Le traitement se fait entièrement dans ton navigateur</small>
+    <input type="file" id="file" accept="application/pdf" multiple hidden />
+  </div>
+
+  <div class="urlbox">
+    <label>🌐 Ou colle des URLs de PDF (une par ligne, autant que tu veux)</label>
+    <textarea id="urls" placeholder="https://www.legifrance.gouv.fr/jorf/jo/.../download
+https://exemple.com/document.pdf"></textarea>
+    <small>Si le site bloque le téléchargement navigateur (CORS), un proxy public est utilisé en secours.</small>
+  </div>
+
+  <div class="options">
+    <label><input type="checkbox" id="optHeadings" checked /> Détecter les titres</label>
+    <label><input type="checkbox" id="optPageBreaks" checked /> Séparateur de pages</label>
+    <label><input type="checkbox" id="optJoinHyphens" checked /> Recoller les mots coupés</label>
+  </div>
+
+  <button id="convertAll" style="width:100%; padding: 13px; font-size: 15px;">🚀 Convertir tout</button>
+
+  <div class="bar-outer" id="progressWrap">
+    <div class="bar"><div id="bar"></div></div>
+    <small id="progressLabel"></small>
+  </div>
+
+  <div class="global-actions" id="globalActions" style="display:none">
+    <button id="dlAll">⬇️ Tout télécharger (.md séparés)</button>
+    <button id="dlZip" class="secondary">🗜️ Tout dans un .zip</button>
+    <button id="resetAll" class="secondary">↺ Tout effacer</button>
+  </div>
+
+  <div class="queue" id="queue"></div>
+</main>
+<footer>Conversion heuristique du texte — les PDF scannés (images) nécessitent un OCR.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function () {
+  if (window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+  var drop = document.getElementById("drop");
+  var fileInput = document.getElementById("file");
+  var queueEl = document.getElementById("queue");
+  var items = []; // {name, status, md, error, url}
+
+  drop.addEventListener("click", function () { fileInput.click(); });
+  ["dragover", "dragenter"].forEach(function (e) {
+    drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add("hover"); });
+  });
+  ["dragleave", "drop"].forEach(function (e) {
+    drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove("hover"); });
+  });
+  drop.addEventListener("drop", function (ev) {
+    Array.from(ev.dataTransfer.files).forEach(addFile);
+  });
+  fileInput.addEventListener("change", function () {
+    Array.from(fileInput.files).forEach(addFile);
+    fileInput.value = "";
+  });
+
+  function opts() {
+    return {
+      headings: document.getElementById("optHeadings").checked,
+      pageBreaks: document.getElementById("optPageBreaks").checked,
+      joinHyphens: document.getElementById("optJoinHyphens").checked
+    };
+  }
+
+  function addFile(f) {
+    if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) return;
+    items.push({ name: f.name.replace(/\.pdf$/i, ""), status: "pending", md: "", error: "", blob: f });
+    render();
+  }
+
+  function render() {
+    queueEl.innerHTML = "";
+    items.forEach(function (it, i) {
+      var div = document.createElement("div");
+      div.className = "item";
+      var badges = { pending: ["pending", "⏳ En attente"], working: ["working", "⏳ Conversion…"], done: ["done", "✅ Terminé"], error: ["error", "❌ Échec"] };
+      var b = badges[it.status];
+      var html = '<div class="head"><span class="name">' + escapeHtml(it.name) + '</span><span class="badge ' + b[0] + '">' + b[1] + '</span></div>';
+      if (it.error) html += '<div class="err">' + escapeHtml(it.error) + '</div>';
+      if (it.status === "done") {
+        html += '<div class="actions">' +
+          '<button onclick="togglePreview(' + i + ')">👁 Aperçu</button>' +
+          '<button class="secondary" onclick="copyOne(' + i + ')">📋 Copier</button>' +
+          '<button class="secondary" onclick="dlOne(' + i + ')">⬇️ .md</button></div>' +
+          '<textarea id="ta' + i + '" spellcheck="false"></textarea>';
+      }
+      div.innerHTML = html;
+      queueEl.appendChild(div);
+      var ta = document.getElementById("ta" + i);
+      if (ta) ta.value = it.md;
+    });
+    document.getElementById("globalActions").style.display = items.some(function (x) { return x.status === "done"; }) ? "flex" : "none";
+  }
+
+  window.togglePreview = function (i) { document.getElementById("ta" + i).classList.toggle("open"); };
+  window.copyOne = function (i) { navigator.clipboard.writeText(items[i].md); };
+  window.dlOne = function (i) { download(items[i].name + ".md", items[i].md); };
+
+  function escapeHtml(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function download(name, content) {
+    var blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ---- Récupération par URL (direct, puis proxys CORS en secours) ----
+  async function fetchPdf(url) {
+    var attempts = [
+      url,
+      "https://corsproxy.io/?url=" + encodeURIComponent(url),
+      "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)
+    ];
+    var lastErr;
+    for (var k = 0; k < attempts.length; k++) {
+      try {
+        var res = await fetch(attempts[k], { redirect: "follow" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var buf = new Uint8Array(await res.arrayBuffer());
+        var magic = String.fromCharCode.apply(null, buf.slice(0, 5));
+        if (buf.length < 100 || magic !== "%PDF-") {
+          if (k === attempts.length - 1) throw new Error("La réponse n'est pas un PDF valide (peut-être une page HTML de redirection ou une erreur du site).");
+          continue;
+        }
+        return buf;
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error("Téléchargement impossible");
+  }
+
+  // ---- Heuristiques de mise en forme ----
+  var RE_ARTICLE = /^article\s+[LDR]?\d+[^\n]{0,80}$/i;
+  var RE_BULLET = /^[-•·—]\s+/;
+  var RE_NUM_BULLET = /^\(?[a-z]\)\s+/;
+  var RE_PAGE_NUM = /^\s*-?\s*\d{1,4}\s*-?\s*$/;
+
+  function isAllCaps(line) {
+    var letters = line.replace(/[^A-ZÀ-Þ]/g, "");
+    var allChars = line.replace(/[^A-Za-zÀ-ÿ]/g, "");
+    return allChars.length > 0 && letters.length >= 3 && letters.length / allChars.length > 0.85;
+  }
+
+  function formatPage(text, o) {
+    var lines = text.split("\n").map(function (l) { return l.replace(/\s+$/, ""); })
+      .filter(function (l) { return !RE_PAGE_NUM.test(l); });
+    var out = [], para = [];
+    function flush() {
+      if (para.length) { var p = para.join(" ").replace(/\s{2,}/g, " ").trim(); if (p) out.push(p); para = []; }
+    }
+    for (var j = 0; j < lines.length; j++) {
+      var l = lines[j].trim();
+      if (!l) { flush(); continue; }
+      if (o.headings) {
+        if (isAllCaps(l) && l.length <= 90) { flush(); out.push("## " + l.replace(/[.:;·\s]+$/, "").trim()); continue; }
+        if (RE_ARTICLE.test(l)) { flush(); out.push("### " + l); continue; }
+      }
+      if (RE_BULLET.test(l)) { flush(); out.push(l.replace(RE_BULLET, "- ")); continue; }
+      if (RE_NUM_BULLET.test(l) && l.length < 200) { flush(); out.push("- " + l); continue; }
+      para.push(l);
+    }
+    flush();
+    return out.join("\n\n");
+  }
+
+  async function convertBuffer(data, o) {
+    var pdf = await window.pdfjsLib.getDocument({ data: data }).promise;
+    var pages = [], noText = 0;
+    for (var i = 1; i <= pdf.numPages; i++) {
+      var page = await pdf.getPage(i);
+      var tc = await page.getTextContent();
+      var rows = [];
+      tc.items.forEach(function (item) {
+        if (!item.str || !item.str.trim()) return;
+        var y = Math.round(item.transform[5]);
+        var last = rows[rows.length - 1];
+        if (last && Math.abs(last.y - y) <= 2) { last.parts.push(item.str); last.y = y; }
+        else rows.push({ y: y, parts: [item.str] });
+      });
+      var text = rows.map(function (r) { return r.parts.join(" "); }).join("\n");
+      if (!text.replace(/\s/g, "")) noText++;
+      var md = formatPage(text, o);
+      if (md.trim()) pages.push((o.pageBreaks ? "<!-- page " + i + " -->\n\n" : "") + md);
+    }
+    var full = pages.join("\n\n");
+    if (o.joinHyphens) full = full.replace(/(\p{Ll})-\s*\n\s*/gu, "$1");
+    if (noText === pdf.numPages) throw new Error("Aucun texte extrait : PDF scanné (OCR nécessaire).");
+    return full;
+  }
+
+  document.getElementById("convertAll").addEventListener("click", async function () {
+    // Ajouter les URLs saisies
+    var urls = document.getElementById("urls").value.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    urls.forEach(function (u) {
+      if (!items.some(function (x) { return x.url === u; })) {
+        var name = u.split("/").pop().replace(/\.pdf.*$/i, "") || "document-" + (items.length + 1);
+        items.push({ name: name, status: "pending", md: "", error: "", url: u });
+      }
+    });
+    if (!items.length) { alert("Ajoute des fichiers PDF ou des URLs."); return; }
+
+    var pw = document.getElementById("progressWrap");
+    pw.style.display = "block";
+    var bar = document.getElementById("bar");
+    var todo = items.filter(function (x) { return x.status === "pending" || x.status === "error"; });
+    var o = opts();
+    var doneCount = 0;
+    var self = this;
+    this.disabled = true;
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.status === "done") continue;
+      it.status = "working"; it.error = ""; render();
+      document.getElementById("progressLabel").textContent = "Document " + (doneCount + 1) + " / " + todo.length + " : " + it.name;
+      try {
+        var data;
+        if (it.blob) data = new Uint8Array(await it.blob.arrayBuffer());
+        else data = await fetchPdf(it.url);
+        it.md = await convertBuffer(data, o);
+        it.status = "done";
+      } catch (e) {
+        it.status = "error";
+        it.error = (e && e.message) ? e.message : String(e);
+      }
+      doneCount++;
+      bar.style.width = (doneCount / todo.length * 100) + "%";
+      render();
+    }
+    document.getElementById("progressLabel").textContent = "Terminé : " + items.filter(function (x) { return x.status === "done"; }).length + " / " + todo.length + " convertis.";
+    self.disabled = false;
+  });
+
+  document.getElementById("dlAll").addEventListener("click", function () {
+    items.forEach(function (it) { if (it.status === "done") download(it.name + ".md", it.md); });
+  });
+
+  document.getElementById("dlZip").addEventListener("click", async function () {
+    if (typeof JSZip === "undefined") { alert("JSZip non chargé — télécharge les fichiers un par un."); return; }
+    var zip = new JSZip();
+    var used = {};
+    items.forEach(function (it) {
+      if (it.status !== "done") return;
+      var n = it.name + ".md";
+      if (used[n]) { used[n]++; n = it.name + "-" + used[n] + ".md"; } else used[n] = 1;
+      zip.file(n, it.md);
+    });
+    var blob = await zip.generateAsync({ type: "blob" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "pdf-to-markdown.zip";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  document.getElementById("resetAll").addEventListener("click", function () {
+    items = [];
+    document.getElementById("urls").value = "";
+    document.getElementById("progressWrap").style.display = "none";
+    document.getElementById("bar").style.width = "0%";
+    render();
+  });
+})();
+</script>
+</body>
+</html>
