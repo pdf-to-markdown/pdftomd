@@ -96,7 +96,7 @@
     <label>🌐 Ou colle des URLs de PDF (une par ligne, autant que tu veux)</label>
     <textarea id="urls" placeholder="https://www.legifrance.gouv.fr/download/file/.../JOE
 https://exemple.com/document.pdf"></textarea>
-    <small>Si le site bloque le téléchargement navigateur (CORS), un proxy public est utilisé en secours.</small>
+    <small>Les URLs sont d'abord récupérées via ton proxy Vercel (/api/fetch-pdf), puis en secours via des proxys publics.</small>
   </div>
 
   <div class="options">
@@ -285,16 +285,34 @@ https://exemple.com/document.pdf"></textarea>
     return head.indexOf("%PDF-") !== -1;
   }
 
+  async function fetchViaOwnProxy(url) {
+    var res = await fetch("/api/fetch-pdf?url=" + encodeURIComponent(url));
+    if (!res.ok) {
+      var msg = "HTTP " + res.status;
+      try { var j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+      throw new Error(msg);
+    }
+    var buf = new Uint8Array(await res.arrayBuffer());
+    if (!looksLikePdf(buf)) throw new Error("réponse non-PDF (" + buf.length + " octets)");
+    return buf;
+  }
+
   async function fetchPdf(url) {
-    var attempts = [
+    var errors = [];
+    // 1) Notre proxy serverless Vercel (pas de CORS, vrais en-têtes navigateur)
+    try {
+      return await fetchViaOwnProxy(url);
+    } catch (e) {
+      errors.push("proxy Vercel : " + ((e && e.message) ? e.message : String(e)));
+    }
+    // 2) Secours : proxys publics
+    var publicProxies = [
       { label: "direct", url: url },
-      { label: "corsproxy.io", url: "https://corsproxy.io/?url=" + encodeURIComponent(url) },
       { label: "allorigins", url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url) },
       { label: "codetabs", url: "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url) }
     ];
-    var errors = [];
-    for (var k = 0; k < attempts.length; k++) {
-      var a = attempts[k];
+    for (var k = 0; k < publicProxies.length; k++) {
+      var a = publicProxies[k];
       try {
         var res = await fetch(a.url, {
           redirect: "follow",
