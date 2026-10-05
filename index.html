@@ -22,7 +22,6 @@
   .gbtn:hover { background: #f8f9fa; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .gbtn svg { width: 20px; height: 20px; }
   #authMsg { margin-top: 18px; font-size: 13.5px; color: #991b1b; min-height: 20px; }
-  #authMsg.ok { color: #065f46; }
   .spinner { display: inline-block; width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   #appScreen { display: none; }
@@ -95,7 +94,7 @@
 
   <div class="urlbox">
     <label>🌐 Ou colle des URLs de PDF (une par ligne, autant que tu veux)</label>
-    <textarea id="urls" placeholder="https://www.legifrance.gouv.fr/jorf/jo/.../download
+    <textarea id="urls" placeholder="https://www.legifrance.gouv.fr/download/file/.../JOE
 https://exemple.com/document.pdf"></textarea>
     <small>Si le site bloque le téléchargement navigateur (CORS), un proxy public est utilisé en secours.</small>
   </div>
@@ -132,13 +131,11 @@ https://exemple.com/document.pdf"></textarea>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function () {
-  // ==== CONFIG INJECTÉE AU BUILD (vercel.json + build.sh + variables Vercel) ====
-  // Aucun secret n'est stocké dans ce repo : les placeholders ci-dessous sont
-  // remplacés par les variables d'environnement Vercel au moment du build.
+  // ==== CONFIG INJECTÉE AU BUILD (build.sh + variables Vercel) ====
   var SUPABASE_URL = "__SUPABASE_URL__";
   var SUPABASE_ANON_KEY = "__SUPABASE_ANON_KEY__";
   var ALLOWED_EMAIL = "contact@mail.martytheo.com";
-  // ===========================================================================
+  // ================================================================
 
   var authScreen = document.getElementById("authScreen");
   var appScreen = document.getElementById("appScreen");
@@ -280,27 +277,38 @@ https://exemple.com/document.pdf"></textarea>
 
   function setLabel(s) { document.getElementById("progressLabel").textContent = s; }
 
+  function looksLikePdf(buf) {
+    if (buf.length < 200) return false;
+    var head = "";
+    var n = Math.min(buf.length, 2048);
+    for (var i = 0; i < n; i++) head += String.fromCharCode(buf[i]);
+    return head.indexOf("%PDF-") !== -1;
+  }
+
   async function fetchPdf(url) {
     var attempts = [
-      url,
-      "https://corsproxy.io/?url=" + encodeURIComponent(url),
-      "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)
+      { label: "direct", url: url },
+      { label: "corsproxy.io", url: "https://corsproxy.io/?url=" + encodeURIComponent(url) },
+      { label: "allorigins", url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(url) },
+      { label: "codetabs", url: "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url) }
     ];
-    var lastErr;
+    var errors = [];
     for (var k = 0; k < attempts.length; k++) {
+      var a = attempts[k];
       try {
-        var res = await fetch(attempts[k], { redirect: "follow" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
+        var res = await fetch(a.url, {
+          redirect: "follow",
+          headers: { "Accept": "application/pdf,application/octet-stream,*/*" }
+        });
+        if (!res.ok) { errors.push(a.label + " : HTTP " + res.status); continue; }
         var buf = new Uint8Array(await res.arrayBuffer());
-        var magic = String.fromCharCode.apply(null, buf.slice(0, 5));
-        if (buf.length < 100 || magic !== "%PDF-") {
-          if (k === attempts.length - 1) throw new Error("La réponse n'est pas un PDF valide (peut-être une page HTML de redirection ou une erreur du site).");
-          continue;
-        }
-        return buf;
-      } catch (e) { lastErr = e; }
+        if (looksLikePdf(buf)) return buf;
+        errors.push(a.label + " : réponse non-PDF (" + buf.length + " octets)");
+      } catch (e) {
+        errors.push(a.label + " : " + ((e && e.message) ? e.message : String(e)));
+      }
     }
-    throw lastErr || new Error("Téléchargement impossible");
+    throw new Error("Impossible de récupérer ce PDF. Détails : " + errors.join(" | "));
   }
 
   async function ocrPage(page, docName, pageNum) {
