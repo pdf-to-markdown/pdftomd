@@ -2,18 +2,22 @@
 // Mode special : jo:YYYY-MM-DD -> sommaire + textes du JO via API legifrance (PISTE).
 
 module.exports = async function (req, res) {
-  var url = req.query && req.query.url ? req.query.url : "";
+  var url = req.query && req.query.url ? String(req.query.url) : "";
+  url = url.trim();
   if (!url) { res.status(400).json({ error: "Parametre url manquant." }); return; }
 
   // ---------- Mode JO (API PISTE) ----------
-  if (/^jo:/i.test(url)) {
+  // accepte jo:date, JO:date, "jo : date", espaces multiples, etc.
+  var joMatch = url.match(/^jo\s*:\s*(\d{4}-\d{2}-\d{2})\s*$/i);
+  if (/^jo\s*:/i.test(url)) {
     try {
-      var date = url.slice(3).trim();
+      var date = joMatch ? joMatch[1] : url.replace(/^jo\s*:\s*/i, "").trim();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        res.status(400).json({ error: "Format attendu : jo:YYYY-MM-DD (ex. jo:2026-10-04)." });
+        res.status(400).json({ error: "Format attendu : jo:YYYY-MM-DD (ex. jo:2026-10-04). Recu : [" + url + "]" });
         return;
       }
       var md = await joToMarkdown(date);
+      res.setHeader("Access-Control-Allow-Origin", "*");
       res.status(200).json({ markdown: md });
     } catch (e) {
       res.status(500).json({ error: "Erreur mode jo: " + ((e && e.message) ? e.message : String(e)) });
@@ -22,7 +26,7 @@ module.exports = async function (req, res) {
   }
 
   // ---------- Mode proxy PDF classique ----------
-  if (!/^https?:\/\//i.test(url)) { res.status(400).json({ error: "URL invalide." }); return; }
+  if (!/^https?:\/\//i.test(url)) { res.status(400).json({ error: "URL invalide. Recu : [" + url.slice(0, 100) + "]" }); return; }
   try {
     var r = await fetch(url, {
       headers: {
