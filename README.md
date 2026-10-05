@@ -1,25 +1,37 @@
 # pdftomd
 
-Convertisseur **PDF → Markdown** — lot (10+ fichiers), par URL, et **OCR intégré** pour les PDF scannés. 100 % navigateur, aucun fichier envoyé sur un serveur.
+Convertisseur **PDF → Markdown** — lot (10+ fichiers), par URL, OCR intégré, **authentification Google via Supabase** (accès privé).
+
+## 🔐 Authentification
+
+L'app est verrouillée : seul le compte **contact@mail.martytheo.com** est autorisé (liste blanche codée dans `index.html`, `ALLOWED_EMAIL`). Toute autre session Google est déconnectée automatiquement.
+
+### Mise en place (une seule fois)
+
+1. **Crée un projet** sur [supabase.com](https://supabase.com) (plan gratuit suffit).
+2. Dans Supabase → **Authentication → Providers → Google** : active le provider.
+   - Il te faut un **Client OAuth Google** : [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) → « Créer des identifiants → ID client OAuth » (application Web).
+   - **URI de redirection autorisée** dans Google Cloud : `https://VOTRE-PROJET.supabase.co/auth/v1/callback` (remplace par ton ref de projet Supabase).
+   - Copie le **Client ID** et le **Client Secret** Google dans Supabase.
+3. Dans Supabase → **Authentication → URL Configuration** :
+   - **Site URL** : `https://pdftomd-olive.vercel.app`
+   - **Redirect URLs** : ajoute `https://pdftomd-olive.vercel.app` et `https://pdftomd-olive.vercel.app/index.html`
+4. Dans `index.html`, remplace en haut du `<script>` :
+   - `SUPABASE_URL` → `https://VOTRE-PROJET.supabase.co` (Settings → API → Project URL)
+   - `SUPABASE_ANON_KEY` → la clé `anon / public` (Settings → API)
+5. Commit → Vercel redéploie.
+
+> ℹ️ La clé `anon` est **publique par conception** (visible côté client). La sécurité réelle vient du provider Google + de la liste blanche `ALLOWED_EMAIL` dans le code. Pour une protection côté serveur (middleware), il faudrait un backend — pas nécessaire ici car l'app n'a aucune donnée côté serveur.
 
 ## ✨ Fonctionnalités
 
-- **Lot** : glisse 10+ PDF à la fois
-- **Par URL** : colle des URLs de PDF (une par ligne) — Légifrance, etc.
-  - si le site bloque le navigateur (CORS), un proxy public est utilisé en secours (corsproxy.io, allorigins)
-- **🔍 OCR intégré (Tesseract.js, fr+en)** : les pages sans texte (PDF scannés / images) sont automatiquement passées à l'OCR — les pages avec texte normal restent rapides
-- **100 % local** : conversion via pdf.js + Tesseract.js dans le navigateur
-- Détection des titres (MAJUSCULES → `##`, « Article X » → `###`)
-- Listes à puces et numérotées, recollage des mots coupés (exem-ple)
-- Séparateur de pages (`<!-- page N -->`)
-- Sortie : copier, télécharger chaque `.md`, ou tout dans un `.zip`
+- **Lot** : 10+ PDF d'un coup
+- **Par URL** : une URL par ligne, proxy CORS en secours
+- **OCR Tesseract.js (fr+en)** : automatique sur les pages scannées
+- **100 % local** : aucune donnée envoyée (hors auth Google/Supabase)
+- Titres, listes, recollage des césures, séparateurs de pages
+- Sortie : `.md` individuels ou `.zip`
 
 ## 🚀 Utilisation
 
-- **En ligne** : https://pdftomd-olive.vercel.app (déploiement Vercel depuis `main`)
-- **En local** : ouvre `index.html` dans ton navigateur
-
-## ⚠️ Notes
-
-- L'OCR est lent (~5-15 s/page) : le premier document scanné télécharge le moteur (~15 Mo), les suivants sont plus rapides.
-- L'OCR fonctionne mieux sur des scans propres ; les scans de très mauvaise qualité peuvent rester partiellement illisibles.
+En ligne : https://pdftomd-olive.vercel.app — connexion Google requise.
